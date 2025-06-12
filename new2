@@ -1,0 +1,18 @@
+
+$ouPath = "OU=Server,OU=FirmaXYZ,DC=maurice,DC=local" 
+$gruppenMitglied = "CN=GROUP-SRV-ADMIN,OU=Admin,DC=maurice,DC=local" 
+$server = Get-ADComputer -SearchBase $ouPath -Filter *
+
+foreach ($srv in $server) {
+    $groupName = "SG_$($srv.Name)"
+    $groupDN = "CN=$groupName,OU=Server,DC=maurice,DC=local" 
+
+    if (-not (Get-ADGroup -Filter "Name -eq '$groupName'" -ErrorAction SilentlyContinue)) {
+        New-ADGroup -Name $groupName -Path "OU=Server,DC=maurice,DC=local" -GroupScope Global -GroupCategory Security
+        
+        Add-ADGroupMember -Identity $groupName -Members $gruppenMitglied
+        Write-Host "Gruppe $groupName erstellt und $gruppenMitglied hinzugefügt."
+    } else {
+        Write-Host "Gruppe $groupName existiert bereits."
+    }
+}
